@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0f172a">
+  <title>校园跑小车控制台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fa;
+      --panel: #ffffff;
+      --ink: #1d2733;
+      --muted: #667085;
+      --line: #d8dee8;
+      --accent: #0f766e;
+      --accent-strong: #0b5f59;
+      --danger: #b42318;
+      --danger-strong: #8f1b13;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.10);
+      --code-bg: #f9fafb;
+      --code-ink: #344054;
+    }
+
+    body.dark {
+      color-scheme: dark;
+      --bg: #050505;
+      --panel: #181818;
+      --ink: #f5f5f5;
+      --muted: #8a8a8a;
+      --line: #2a2a2a;
+      --accent: #111111;
+      --accent-strong: #242424;
+      --danger: #b91c1c;
+      --danger-strong: #991b1b;
+      --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      --code-bg: #070707;
+      --code-ink: #d4d4d4;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not(.light) {
+        color-scheme: dark;
+        --bg: #0f172a;
+        --panel: #1e293b;
+        --ink: #e2e8f0;
+        --muted: #94a3b8;
+        --line: #334155;
+        --accent: #14b8a6;
+        --accent-strong: #0d9488;
+        --danger: #ef4444;
+        --danger-strong: #dc2626;
+        --shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        --code-bg: #0f172a;
+        --code-ink: #cbd5e1;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      height: 100%;
+      min-height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Microsoft YaHei", Arial, sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    input, textarea, [contenteditable] {
+      -webkit-user-select: text;
+      user-select: text;
+      -webkit-touch-callout: default;
+    }
+
+    main {
+      width: calc(100vw - 48px);
+      margin: 0 auto;
+      height: 100vh;
+      padding: 8px 0;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(62px, auto) 1fr;
+      gap: 6px;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .topbar,
+    .status-row,
+    .telemetry-strip,
+    .workspace {
+      width: 100%;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1.2fr) minmax(105px, 0.7fr) minmax(105px, 0.7fr) repeat(4, 66px) minmax(110px, 0.7fr);
+      gap: 7px;
+      align-items: end;
+      margin-bottom: 0;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: left;
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      height: 31px;
+      margin-top: 4px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 15px;
+    }
+
+    button {
+      height: 34px;
+      border: 0;
+      border-radius: 6px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      user-select: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:hover {
+      background: var(--accent-strong);
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      filter: grayscale(0.35);
+    }
+
+    button.secondary {
+      background: #344054;
+    }
+
+    button.secondary:hover {
+      background: #1f2937;
+    }
+
+    button.danger {
+      background: var(--danger);
+    }
+
+    button.danger:hover {
+      background: var(--danger-strong);
+    }
+
+    body.dark button {
+      border: 1px solid var(--line);
+      background: #101010;
+      color: var(--ink);
+    }
+
+    body.dark button:hover {
+      background: #202020;
+    }
+
+    body.dark button.secondary {
+      background: #0b0b0b;
+    }
+
+    body.dark button.secondary:hover {
+      background: #1c1c1c;
+    }
+
+    body.dark button.danger {
+      border-color: #7f1d1d;
+      background: var(--danger);
+      color: #fff;
+    }
+
+    body.dark button.danger:hover {
+      background: var(--danger-strong);
+    }
+
+    body.dark #connectBtn {
+      background: #f5f5f5;
+      color: #111;
+    }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 0;
+    }
+
+    .pill {
+      min-height: 28px;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pill strong {
+      color: var(--ink);
+    }
+
+    .pill span.ok { color: #047857; font-weight: 600; }
+    .pill span.warn { color: #b45309; font-weight: 600; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(460px, 1fr) clamp(560px, 46vw, 720px);
+      gap: 10px;
+      align-items: stretch;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .video-panel,
+    .campus-panel,
+    .control-panel,
+    .telemetry-panel,
+    .audio-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .video-panel {
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    #video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: #161b22;
+      object-fit: contain;
+      filter: url(#rbswap);
+    }
+
+    .side {
+      display: grid;
+      grid-template-rows: auto auto minmax(240px, 1fr);
+      gap: 8px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .campus-panel,
+    .control-panel,
+    .telemetry-panel,
+    .audio-panel {
+      padding: 10px;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .telemetry-panel,
+    .audio-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .campus-panel {
+      display: grid;
+      gap: 5px;
+    }
+
+    .campus-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .campus-mini {
+      min-height: 26px;
+      padding: 4px 7px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--code-bg);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.25;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .campus-mini strong {
+      color: var(--ink);
+      margin-right: 4px;
+    }
+
+    .campus-actions,
+    .admin-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .campus-actions button,
+    .admin-actions button {
+      height: 30px;
+      padding: 0 6px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .admin-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      gap: 5px;
+      max-height: 76px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--code-bg);
+      padding: 6px;
+      font-size: 12px;
+      color: var(--code-ink);
+    }
+
+    .admin-panel[hidden] {
+      display: none;
+    }
+
+    .admin-actions[hidden] {
+      display: none;
+    }
+
+    .admin-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 5px;
+      align-items: center;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .admin-item:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    h2 {
+      margin: 0 0 6px;
+      font-size: 15px;
+      line-height: 1.2;
+      flex: 0 0 auto;
+    }
+
+    .pad {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(64px, 1fr));
+      gap: 6px;
+      max-width: 260px;
+      margin: 0 auto 6px;
+    }
+
+    .pad button {
+      width: 100%;
+      min-height: 37px;
+      touch-action: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    .pad button small {
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .pad .wide {
+      grid-column: span 3;
+    }
+
+    .pad .span-2 {
+      grid-column: span 2;
+    }
+
+    .speed-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin: 6px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    #releaseBtn {
+      width: 100%;
+    }
+
+    .control-panel {
+      display: grid;
+      grid-template-columns: minmax(230px, 0.9fr) minmax(210px, 1fr);
+      grid-template-rows: auto auto auto auto;
+      column-gap: 10px;
+      row-gap: 6px;
+      align-items: stretch;
+    }
+
+    .control-panel h2 {
+      grid-column: 1 / -1;
+      margin-bottom: 0;
+    }
+
+    .control-panel .pad {
+      grid-column: 1;
+      grid-row: 2 / span 3;
+      max-width: none;
+      margin: 0;
+    }
+
+    .control-panel .speed-row {
+      grid-column: 2;
+      margin: 0;
+    }
+
+    .control-panel #releaseBtn {
+      grid-column: 2;
+      height: 32px;
+    }
+
+    .control-panel .auto-actions {
+      grid-column: 2;
+      margin-top: 0;
+    }
+
+    .auto-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .auto-actions button {
+      width: 100%;
+      height: 32px;
+      padding: 0 6px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    #status {
+      width: 100%;
+      min-height: 0;
+      max-height: none;
+      flex: 1;
+      margin: 0;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--code-bg);
+      padding: 6px 8px;
+      color: var(--code-ink);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+      line-height: 1.3;
+      white-space: pre-wrap;
+    }
+
+    .telemetry-strip {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 8px;
+      align-items: stretch;
+      padding: 6px 10px;
+      min-height: 62px;
+      overflow: hidden;
+    }
+
+    .telemetry-strip h2 {
+      width: 68px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .telemetry-strip #statusRawBtn {
+      float: none !important;
+      width: 54px;
+      height: 24px !important;
+      padding: 0 !important;
+    }
+
+    .telemetry-strip #status {
+      min-height: 40px;
+      max-height: 50px;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        height: auto;
+        overflow: auto;
+      }
+
+      main {
+        width: min(100vw - 20px, 680px);
+        height: auto;
+        min-height: 100vh;
+        display: block;
+        overflow: visible;
+        padding-top: 12px;
+      }
+
+      .topbar, .workspace, .status-row {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .topbar button {
+        width: 100%;
+      }
+
+      .topbar label {
+        grid-column: span 2;
+      }
+
+      .workspace {
+        gap: 10px;
+        overflow: visible;
+      }
+
+      #video {
+        height: auto;
+        aspect-ratio: 4 / 3;
+      }
+
+      .side {
+        grid-template-rows: auto;
+        overflow: visible;
+      }
+
+      .control-panel {
+        display: block;
+      }
+
+      .control-panel .pad {
+        max-width: 260px;
+        margin: 0 auto 6px;
+      }
+
+      .control-panel .speed-row {
+        margin: 6px 0;
+      }
+
+      .control-panel .auto-actions {
+        margin-top: 6px;
+      }
+
+      .campus-actions,
+      .admin-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      main {
+        width: calc(100vw - 14px);
+        padding: 8px 0 16px;
+      }
+
+      h1 {
+        margin-bottom: 8px;
+        font-size: 20px;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .topbar label { grid-column: span 2; }
+      .topbar button { height: 44px; font-size: 15px; }
+
+      .status-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 8px;
+      }
+
+      .pill {
+        font-size: 12px;
+        min-height: 32px;
+        padding: 6px 8px;
+      }
+
+      .workspace {
+        gap: 8px;
+      }
+
+      .video-panel { border-radius: 6px; }
+
+      .control-panel, .telemetry-panel, .audio-panel {
+        padding: 10px;
+      }
+
+      h2 { font-size: 15px; margin-bottom: 8px; }
+
+      .pad {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .pad button {
+        min-height: 56px;
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .speed-row { margin: 8px 0 10px; font-size: 13px; }
+
+      #status {
+        max-height: 200px;
+        font-size: 12px;
+        min-height: 120px;
+      }
+
+      .audio-log { max-height: 200px; min-height: 100px; font-size: 13px; }
+      .audio-input-row { gap: 6px; }
+    }
+    .audio-panel { margin-top: 0; }
+    .audio-panel {
+      min-height: 230px;
+      overflow: visible;
+    }
+    .audio-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      flex: 0 0 auto;
+    }
+    .audio-row button {
+      height: 30px;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+    .audio-row #audioState { font-size: 13px; color: var(--muted); }
+    #audioToggleBtn.on { background: #1a6; color: #fff; }
+    .audio-log {
+      width: 100%; min-height: 104px; max-height: none; flex: 1 1 auto; overflow: auto;
+      border: 1px solid var(--line); border-radius: 6px; background: var(--code-bg);
+      padding: 8px; color: var(--code-ink); font-size: 12px; line-height: 1.45;
+    }
+    .audio-line { margin: 2px 0; white-space: pre-wrap; word-break: break-word; }
+    .audio-line.user { color: #1d4ed8; }
+    .audio-line.bot { color: #047857; font-weight: 600; }
+    .audio-line.draft { color: #98a2b3; }
+    .audio-line.sys { color: #98a2b3; font-size: 12px; }
+    .audio-input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 72px;
+      gap: 6px;
+      margin-top: 6px;
+      flex: 0 0 auto;
+    }
+    .audio-input-row #ttsText {
+      min-width: 0;
+      height: 32px;
+      padding: 0 8px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .audio-input-row #ttsBtn {
+      width: 72px;
+      height: 32px;
+      padding: 0;
+      font-size: 13px;
+    }
+
+    @media (min-width: 1800px) and (min-height: 1000px) {
+      main {
+        padding: 12px 0;
+        gap: 8px;
+      }
+
+      h1 {
+        font-size: 27px;
+      }
+
+      label {
+        font-size: 13px;
+      }
+
+      input[type="text"],
+      input[type="password"] {
+        height: 38px;
+        font-size: 16px;
+      }
+
+      button {
+        height: 40px;
+        font-size: 16px;
+      }
+
+      .pill {
+        min-height: 34px;
+        padding: 7px 12px;
+        font-size: 14px;
+      }
+
+      h2 {
+        font-size: 18px;
+        margin-bottom: 8px;
+      }
+
+      .side {
+        gap: 10px;
+      }
+
+      .control-panel,
+      .telemetry-panel,
+      .audio-panel {
+        padding: 12px;
+      }
+
+      .pad {
+        max-width: 320px;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .pad button {
+        min-height: 48px;
+        font-size: 20px;
+      }
+
+      .pad button small {
+        font-size: 16px;
+      }
+
+      .speed-row {
+        font-size: 14px;
+        margin: 8px 0;
+      }
+
+      .auto-actions button {
+        height: 38px;
+        font-size: 15px;
+      }
+
+      #status,
+      .audio-log {
+        font-size: 13px;
+        line-height: 1.38;
+      }
+
+      .audio-input-row #ttsText {
+        height: 36px;
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 红蓝通道互换纠正(BGR/RGB),黑白灰不受影响 -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+    <filter id="rbswap" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0 0 1 0 0  0 1 0 0 0  1 0 0 0 0  0 0 0 1 0"/>
+    </filter>
+  </defs></svg>
+  <main>
+    <h1>校园跑小车控制台<button id="fullscreenBtn" type="button" style="float:right;width:32px;height:32px;border-radius:50%;background:var(--panel);color:var(--ink);border:1px solid var(--line);font-size:15px;cursor:pointer;padding:0;line-height:32px;margin-left:6px;" title="全屏">⛶</button><button id="themeBtn" type="button" style="float:right;width:32px;height:32px;border-radius:50%;background:var(--panel);color:var(--ink);border:1px solid var(--line);font-size:15px;cursor:pointer;padding:0;line-height:32px;" title="切换深色/浅色模式">🌙</button></h1>
+
+    <section class="topbar">
+      <label>
+        服务器地址
+        <input id="server" type="text" inputmode="url" autocomplete="url" spellcheck="false">
+      </label>
+      <label>
+        账号
+        <input id="username" type="text" autocomplete="username" placeholder="首次注册=管理员">
+      </label>
+      <label>
+        密码
+        <input id="password" type="password" autocomplete="current-password">
+      </label>
+      <button id="loginBtn" type="button">登录</button>
+      <button class="secondary" id="registerBtn" type="button">注册</button>
+      <button id="connectBtn" type="button">连接</button>
+      <button class="secondary" id="disconnectBtn" type="button">断开</button>
+      <label title="仅兼容旧 token 页面；登录后可留空">
+        兼容 Token
+        <input id="token" type="password" autocomplete="current-password">
+      </label>
+    </section>
+
+    <section class="status-row">
+      <div class="pill"><strong>用户</strong> <span id="userState">未登录</span></div>
+      <div class="pill"><strong>权限</strong> <span id="permissionState">观看</span></div>
+      <div class="pill"><strong>控制</strong> <span id="controlState">未连接</span></div>
+      <div class="pill"><strong>图像</strong> <span id="videoState">未连接</span></div>
+      <div class="pill"><strong>输入</strong> <span id="inputState">空闲</span></div>
+      <div class="pill"><strong>模式</strong> <span id="modeState">idle</span></div>
+      <div class="pill"><strong>延迟</strong> <span id="latencyState">--</span></div>
+    </section>
+
+    <section class="telemetry-panel telemetry-strip">
+      <h2>状态 <button id="statusRawBtn" type="button" style="float:right;height:24px;border-radius:4px;background:var(--line);color:var(--ink);border:0;font-size:12px;cursor:pointer;padding:0 8px;font-weight:400;">原始</button></h2>
+      <pre id="status">暂无</pre>
+    </section>
+
+    <section class="workspace">
+      <div class="video-panel">
+        <img id="video" alt="">
+      </div>
+
+      <div class="side">
+        <section class="campus-panel">
+          <h2>校园跑权限</h2>
+          <div class="campus-grid">
+            <div class="campus-mini"><strong>驾驶员</strong><span id="driverState">暂无</span></div>
+            <div class="campus-mini"><strong>校园跑</strong><span id="runState">未开始</span></div>
+            <div class="campus-mini"><strong>车辆</strong><span id="carState">未知</span></div>
+            <div class="campus-mini"><strong>手柄</strong><span id="gamepadState">未检测</span></div>
+          </div>
+          <div class="campus-actions">
+            <button id="requestDriverBtn" type="button" class="secondary">申请驾驶</button>
+            <button id="startRunBtn" type="button">开始校园跑</button>
+            <button id="endRunBtn" type="button" class="secondary">结束记录</button>
+            <button id="logoutBtn" type="button" class="secondary">退出</button>
+          </div>
+          <div class="admin-actions" id="adminActions" hidden>
+            <button id="refreshAdminBtn" type="button" class="secondary">刷新审批</button>
+            <button id="revokeLeaseBtn" type="button" class="danger">收回控制</button>
+            <button id="loadRunsBtn" type="button" class="secondary">运行记录</button>
+            <button id="loadAuditBtn" type="button" class="secondary">安全日志</button>
+          </div>
+          <div id="adminPanel" class="admin-panel" hidden>管理员数据加载中</div>
+        </section>
+
+        <section class="control-panel">
+          <h2>遥控</h2>
+          <div class="pad" id="buttonPad">
+            <button type="button" data-action="ROTATE_LEFT"><strong>Q</strong><small>↶</small></button>
+            <button type="button" data-action="FORWARD"><strong>W</strong><small>↑</small></button>
+            <button type="button" data-action="ROTATE_RIGHT"><strong>E</strong><small>↷</small></button>
+            <button type="button" data-action="LEFT"><strong>A</strong><small>←</small></button>
+            <button type="button" data-action="BACKWARD"><strong>S</strong><small>↓</small></button>
+            <button type="button" data-action="RIGHT"><strong>D</strong><small>→</small></button>
+            <button class="secondary span-2" type="button" data-action="STOP"><strong>Space</strong><small>■</small></button>
+            <button class="danger" type="button" data-action="ESTOP">急停</button>
+          </div>
+
+          <div class="speed-row">
+            <span>速度</span>
+            <input id="speed" type="range" min="0.18" max="1" step="0.01" value="0.40">
+            <strong id="speedValue">0.40</strong>
+          </div>
+
+          <button class="secondary" id="releaseBtn" type="button">释放遥控</button>
+          <div class="auto-actions">
+            <button id="startLineFollowBtn" type="button">开始循迹</button>
+            <button class="secondary" id="stopAutoBtn" type="button">停止自动</button>
+            <button class="secondary" id="clearEstopBtn" type="button">解除急停</button>
+          </div>
+        </section>
+
+        <section class="audio-panel">
+          <h2>语音助手</h2>
+          <div class="audio-row">
+            <button id="audioToggleBtn" type="button" disabled>&#127908; 开启音频</button>
+            <span id="audioState">未连接</span>
+          </div>
+          <div id="audioLog" class="audio-log"><div class="audio-line sys">开启后对车载麦克风说话，识别文字显示在这里；回答由车上喇叭播报（网页不放原声）。</div></div>
+          <div class="audio-input-row">
+            <input id="ttsText" type="text" placeholder="输入文字，车上喇叭播报" autocomplete="off">
+            <button id="ttsBtn" type="button" class="secondary" disabled>播报</button>
+          </div>
+        </section>
+      </div>
+    </section>
+  </main>
+
+<script>
+let controlWs = null;
+let videoWs = null;
+let audioWs = null;
+let audioOn = false;
+let audioDraftEl = null;
+let seq = 1;
+let buttonAction = null;
+let previousActive = false;
+let idleStopBurst = 0;
+let sendTimer = null;
+let gamepadLoopStarted = false;
+let estopBurst = 0;
+let activePointerId = null;
+let manualControlEnabled = true;
+let localControlMode = "idle";
+let estopLatched = false;
+let campusState = {
+  user: null,
+  permissions: {authenticated: false, is_admin: false, can_control: false, can_clear_estop: false, can_estop: false},
+  current_driver: null,
+  active_run: null,
+  car_online: false,
+  first_user_will_be_admin: false
+};
+
+const SERVER_STORAGE_KEY = "carRelayServer";
+const TOKEN_STORAGE_KEY = "carRelayToken";
+const SPEED_STORAGE_KEY = "carRelaySpeed";
+const USERNAME_STORAGE_KEY = "carRelayUsername";
+const FALLBACK_SERVER = "ws://127.0.0.1:8000";
+
+const keyState = new Set();
+const serverEl = document.getElementById("server");
+const tokenEl = document.getElementById("token");
+const usernameEl = document.getElementById("username");
+const passwordEl = document.getElementById("password");
+const loginBtn = document.getElementById("loginBtn");
+const registerBtn = document.getElementById("registerBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const connectBtn = document.getElementById("connectBtn");
+const disconnectBtn = document.getElementById("disconnectBtn");
+const userState = document.getElementById("userState");
+const permissionState = document.getElementById("permissionState");
+const controlState = document.getElementById("controlState");
+const videoState = document.getElementById("videoState");
+const inputState = document.getElementById("inputState");
+const modeState = document.getElementById("modeState");
+const gamepadState = document.getElementById("gamepadState");
+const latencyState = document.getElementById("latencyState");
+const driverState = document.getElementById("driverState");
+const runState = document.getElementById("runState");
+const carState = document.getElementById("carState");
+const requestDriverBtn = document.getElementById("requestDriverBtn");
+const startRunBtn = document.getElementById("startRunBtn");
+const endRunBtn = document.getElementById("endRunBtn");
+const adminActions = document.getElementById("adminActions");
+const adminPanel = document.getElementById("adminPanel");
+const refreshAdminBtn = document.getElementById("refreshAdminBtn");
+const revokeLeaseBtn = document.getElementById("revokeLeaseBtn");
+const loadRunsBtn = document.getElementById("loadRunsBtn");
+const loadAuditBtn = document.getElementById("loadAuditBtn");
+const statusEl = document.getElementById("status");
+const speedEl = document.getElementById("speed");
+const audioToggleBtn = document.getElementById("audioToggleBtn");
+const audioState = document.getElementById("audioState");
+const audioLog = document.getElementById("audioLog");
+const ttsText = document.getElementById("ttsText");
+const ttsBtn = document.getElementById("ttsBtn");
+const speedValue = document.getElementById("speedValue");
+const releaseBtn = document.getElementById("releaseBtn");
+let lastVideoAt = 0;
+let videoFps = 0;
+
+let carOnline = false;
+
+const ACTION_TO_VECTOR = {
+  FORWARD: {vx: 0, vy: 1, wz: 0},
+  BACKWARD: {vx: 0, vy: -1, wz: 0},
+  LEFT: {vx: -1, vy: 0, wz: 0},
+  RIGHT: {vx: 1, vy: 0, wz: 0},
+  ROTATE_LEFT: {vx: 0, vy: 0, wz: 1},
+  ROTATE_RIGHT: {vx: 0, vy: 0, wz: -1},
+  STOP: {vx: 0, vy: 0, wz: 0},
+  STOP_AUTO: {vx: 0, vy: 0, wz: 0},
+  START_LINE_FOLLOW: {vx: 0, vy: 0, wz: 0},
+  CLEAR_ESTOP: {vx: 0, vy: 0, wz: 0},
+  ESTOP: {vx: 0, vy: 0, wz: 0}
+};
+
+const AUTO_ACTIONS = new Set(["START_LINE_FOLLOW", "LINE_FOLLOW", "AUTO_LINE_FOLLOW"]);
+const ZERO_SPEED_ACTIONS = new Set(["STOP", "STOP_AUTO", "STOP_LINE_FOLLOW", "HOLD", "ESTOP", "CLEAR_ESTOP", "START_LINE_FOLLOW"]);
+
+const CONTROL_KEYS = new Set([
+  "w", "a", "s", "d", "q", "e",
+  "arrowup", "arrowdown", "arrowleft", "arrowright", " "
+]);
+
+const MIN_ACTIVE_SPEED = 0.18;
+const GAMEPAD_TRIGGER_DEADBAND = 0.15;
+
+function clamp(value, low, high) {
+  return Math.max(low, Math.min(high, value));
+}
+
+function round3(value) {
+  return Math.round(value * 1000) / 1000;
+}
+
+function deadzone(value, threshold = 0.12) {
+  if (Math.abs(value) < threshold) return 0;
+  const sign = Math.sign(value);
+  return sign * (Math.abs(value) - threshold) / (1 - threshold);
+}
+
+function vectorActive(vector) {
+  return Math.max(Math.abs(vector.vx), Math.abs(vector.vy), Math.abs(vector.wz)) > 0.01;
+}
+
+function defaultServerUrl() {
+  if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+    const scheme = window.location.protocol === "https:" ? "wss" : "ws";
+    return `${scheme}://${window.location.host}`;
+  }
+  return FALLBACK_SERVER;
+}
+
+function normalizeServerUrl(value) {
+  const raw = value.trim();
+  if (!raw) return defaultServerUrl();
+  if (/^wss?:\/\//i.test(raw)) return raw.replace(/\/$/, "");
+  if (/^https?:\/\//i.test(raw)) {
+    return raw.replace(/^http/i, "ws").replace(/\/$/, "");
+  }
+  const scheme = window.location.protocol === "https:" ? "wss" : "ws";
+  return `${scheme}://${raw}`.replace(/\/$/, "");
+}
+
+function httpBaseUrl() {
+  return normalizeServerUrl(serverEl.value)
+    .replace(/^wss:/i, "https:")
+    .replace(/^ws:/i, "http:");
+}
+
+function wsAuthSuffix() {
+  if (isLoggedIn()) return "";
+  const token = tokenEl.value.trim();
+  return token ? `?token=${encodeURIComponent(token)}` : "";
+}
+
+async function apiGet(path, params = {}) {
+  const query = new URLSearchParams(params);
+  const url = `${httpBaseUrl()}${path}${query.toString() ? "?" + query.toString() : ""}`;
+  const response = await fetch(url, {
+    method: "GET",
+    credentials: "include",
+    cache: "no-store"
+  });
+  const text = await response.text();
+  let data = {};
+  try { data = text ? JSON.parse(text) : {}; } catch { data = {status: "error", message: text}; }
+  if (!response.ok || data.status === "error") {
+    throw new Error(data.message || `HTTP ${response.status}`);
+  }
+  return data;
+}
+
+function mergeCampusState(data) {
+  if (!data || typeof data !== "object") return;
+  campusState = {
+    ...campusState,
+    ...data,
+    permissions: {...campusState.permissions, ...(data.permissions || {})}
+  };
+  updateCampusUi();
+}
+
+function canControlNow() {
+  return !!(campusState.permissions && campusState.permissions.can_control);
+}
+
+function canEstopNow() {
+  return !!(campusState.permissions && campusState.permissions.can_estop);
+}
+
+function isLoggedIn() {
+  return !!(campusState.permissions && campusState.permissions.authenticated);
+}
+
+function hasLegacyToken() {
+  return !isLoggedIn() && tokenEl.value.trim().length > 0;
+}
+
+function canSendAction(action, estop) {
+  if (estop || action === "ESTOP") return canEstopNow() || hasLegacyToken();
+  if (!action && manualControlEnabled) return canControlNow() || hasLegacyToken();
+  if (action === "STOP") return canControlNow() || hasLegacyToken();
+  return canControlNow() || hasLegacyToken();
+}
+
+function formatTime(ts) {
+  if (!ts) return "--";
+  const date = new Date(ts * 1000);
+  return date.toLocaleTimeString("zh-CN", {hour12: false});
+}
+
+function updateCampusUi() {
+  const user = campusState.user;
+  const perms = campusState.permissions || {};
+  userState.innerText = user ? `${user.username} / ${user.role}` : (campusState.first_user_will_be_admin ? "未登录，首次注册为管理员" : "未登录");
+  userState.className = user ? "ok" : "warn";
+
+  let permText = "观看";
+  if (perms.is_admin) permText = "管理员";
+  else if (perms.can_control) permText = "驾驶中";
+  else if (perms.authenticated) permText = "仅观看";
+  permissionState.innerText = permText;
+  permissionState.className = perms.can_control || perms.is_admin ? "ok" : "warn";
+
+  const driver = campusState.current_driver;
+  driverState.innerText = driver ? `${driver.username} 至 ${formatTime(driver.expires_at)}` : "暂无";
+  runState.innerText = campusState.active_run ? `${campusState.active_run.mode} #${campusState.active_run.id}` : "未开始";
+  carState.innerText = campusState.car_online ? "在线" : "离线";
+  carState.className = campusState.car_online ? "ok" : "warn";
+
+  adminActions.hidden = !perms.is_admin;
+  adminPanel.hidden = !perms.is_admin;
+  requestDriverBtn.disabled = !perms.authenticated || perms.can_control || perms.is_admin;
+  startRunBtn.disabled = !perms.can_control;
+  endRunBtn.disabled = !perms.can_control || !campusState.active_run;
+  logoutBtn.disabled = !perms.authenticated;
+  updateControlButtons();
+}
+
+function updateControlButtons() {
+  const canDrive = canControlNow() || hasLegacyToken();
+  const canEstop = canEstopNow() || hasLegacyToken();
+  document.querySelectorAll("#buttonPad button").forEach((button) => {
+    button.disabled = button.dataset.action === "ESTOP" ? !canEstop : !canDrive;
+  });
+  releaseBtn.disabled = !canDrive;
+  document.getElementById("startLineFollowBtn").disabled = !canDrive;
+  document.getElementById("stopAutoBtn").disabled = !canDrive;
+  document.getElementById("clearEstopBtn").disabled = !(campusState.permissions.can_clear_estop || hasLegacyToken());
+  ttsBtn.disabled = !(audioWs && audioWs.readyState === WebSocket.OPEN);
+}
+
+async function refreshMe() {
+  try {
+    const data = await apiGet("/api/me");
+    mergeCampusState(data);
+    return data;
+  } catch (error) {
+    userState.innerText = error.message;
+    userState.className = "warn";
+    updateCampusUi();
+    return null;
+  }
+}
+
+async function loginOrRegister(mode) {
+  const username = usernameEl.value.trim();
+  const password = passwordEl.value;
+  if (!username || !password) {
+    userState.innerText = "请输入账号和密码";
+    userState.className = "warn";
+    return;
+  }
+  try {
+    const data = await apiGet(mode === "register" ? "/api/register" : "/api/login", {username, password});
+    window.localStorage.setItem(USERNAME_STORAGE_KEY, username);
+    passwordEl.value = "";
+    mergeCampusState(data);
+    userState.innerText = mode === "register" ? "注册成功" : "登录成功";
+    userState.className = "ok";
+    connectAll();
+    if (campusState.permissions.is_admin) refreshAdmin();
+  } catch (error) {
+    userState.innerText = error.message;
+    userState.className = "warn";
+  }
+}
+
+async function logout() {
+  try { await apiGet("/api/logout"); } catch {}
+  disconnectAll();
+  campusState = {
+    user: null,
+    permissions: {authenticated: false, is_admin: false, can_control: false, can_clear_estop: false, can_estop: false},
+    current_driver: null,
+    active_run: null,
+    car_online: false,
+    first_user_will_be_admin: false
+  };
+  updateCampusUi();
+  await refreshMe();
+}
+
+async function requestDriver() {
+  try {
+    const data = await apiGet("/api/request_driver");
+    mergeCampusState(data);
+    userState.innerText = "已提交驾驶申请";
+    userState.className = "ok";
+  } catch (error) {
+    userState.innerText = error.message;
+    userState.className = "warn";
+  }
+}
+
+async function startRun() {
+  try {
+    const data = await apiGet("/api/run/start", {mode: manualControlEnabled ? "manual" : "line_follow"});
+    mergeCampusState(data);
+  } catch (error) {
+    runState.innerText = error.message;
+  }
+}
+
+async function endRun() {
+  try {
+    const data = await apiGet("/api/run/end", {final_status: localControlMode});
+    mergeCampusState(data);
+  } catch (error) {
+    runState.innerText = error.message;
+  }
+}
+
+function renderAdminList(title, items, renderItem) {
+  adminPanel.hidden = false;
+  if (!items || !items.length) {
+    adminPanel.innerHTML = `<strong>${title}</strong><div>暂无数据</div>`;
+    return;
+  }
+  adminPanel.innerHTML = `<strong>${title}</strong>` + items.map(renderItem).join("");
+}
+
+async function refreshAdmin() {
+  if (!(campusState.permissions && campusState.permissions.is_admin)) return;
+  try {
+    const data = await apiGet("/api/admin/driver_requests");
+    mergeCampusState(data);
+    renderAdminList("驾驶申请", data.requests || [], (req) => {
+      const pending = req.status === "pending";
+      return `<div class="admin-item">
+        <span>#${req.id} ${req.username} / ${req.status}</span>
+        <button type="button" ${pending ? "" : "disabled"} onclick="approveDriver(${req.id})">批准</button>
+        <button type="button" ${pending ? "" : "disabled"} onclick="rejectDriver(${req.id})">拒绝</button>
+      </div>`;
+    });
+  } catch (error) {
+    adminPanel.textContent = error.message;
+  }
+}
+
+async function approveDriver(id) {
+  try {
+    const data = await apiGet("/api/admin/approve_driver", {id, minutes: 5});
+    mergeCampusState(data);
+    await refreshAdmin();
+  } catch (error) {
+    adminPanel.textContent = error.message;
+  }
+}
+
+async function rejectDriver(id) {
+  try {
+    const data = await apiGet("/api/admin/reject_driver", {id});
+    mergeCampusState(data);
+    await refreshAdmin();
+  } catch (error) {
+    adminPanel.textContent = error.message;
+  }
+}
+
+async function revokeLease() {
+  try {
+    const data = await apiGet("/api/admin/revoke_lease");
+    mergeCampusState(data);
+    await refreshAdmin();
+  } catch (error) {
+    adminPanel.textContent = error.message;
+  }
+}
+
+async function loadRuns() {
+  try {
+    const data = await apiGet("/api/runs");
+    mergeCampusState(data);
+    renderAdminList("运行记录", data.runs || [], (run) => (
+      `<div class="admin-item"><span>#${run.id} ${run.operator_name || "未知"} ${run.mode} 急停${run.estop_count}</span><span>${run.active ? "进行中" : "已结束"}</span><span>${formatTime(run.started_at)}</span></div>`
+    ));
+  } catch (error) {
+    adminPanel.textContent = error.message;
+  }
+}
+
+async function loadAudit() {
+  try {
+    const data = await apiGet("/api/admin/audit_logs");
+    mergeCampusState(data);
+    renderAdminList("安全日志", data.logs || [], (log) => (
+      `<div class="admin-item"><span>#${log.id} ${log.username || "系统"} ${log.action}</span><span>${formatTime(log.ts)}</span><span></span></div>`
+    ));
+  } catch (error) {
+    adminPanel.textContent = error.message;
+  }
+}
+
+function loadSettings() {
+  serverEl.value = window.localStorage.getItem(SERVER_STORAGE_KEY) || defaultServerUrl();
+  tokenEl.value = window.localStorage.getItem(TOKEN_STORAGE_KEY) || "";
+  usernameEl.value = window.localStorage.getItem(USERNAME_STORAGE_KEY) || "";
+  const savedSpeed = Number(window.localStorage.getItem(SPEED_STORAGE_KEY));
+  if (Number.isFinite(savedSpeed) && savedSpeed >= MIN_ACTIVE_SPEED && savedSpeed <= 1) {
+    speedEl.value = String(savedSpeed);
+  }
+  speedValue.innerText = Number(speedEl.value).toFixed(2);
+}
+
+function saveSettings(server, token) {
+  window.localStorage.setItem(SERVER_STORAGE_KEY, server);
+  window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  window.localStorage.setItem(SPEED_STORAGE_KEY, String(currentSpeed()));
+}
+
+function connectAll() {
+  const server = normalizeServerUrl(serverEl.value);
+  const token = tokenEl.value.trim();
+
+  serverEl.value = server;
+  if (!token && !isLoggedIn()) {
+    controlState.innerText = "请先登录";
+    videoState.innerText = "未连接";
+    usernameEl.focus();
+    return;
+  }
+  saveSettings(server, token);
+  manualControlEnabled = true;
+  estopLatched = false;
+  updateControlModeUi("idle");
+
+  if (controlWs) controlWs.close();
+  if (videoWs) videoWs.close();
+  lastVideoAt = 0;
+  videoFps = 0;
+  updateLatency(null);
+
+  controlWs = new WebSocket(`${server}/web/control${wsAuthSuffix()}`);
+  videoWs = new WebSocket(`${server}/web/video${wsAuthSuffix()}`);
+  videoWs.binaryType = "arraybuffer";
+
+  controlState.innerText = "连接中";
+  videoState.innerText = "连接中";
+
+  controlWs.onopen = () => {
+    controlState.innerText = "已连服务器";
+    controlState.className = "";
+    connectBtn.disabled = true;
+    startSendLoop();
+  };
+
+  controlWs.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.type === "error" && data.msg && data.msg.includes("car offline")) {
+        carOnline = false;
+        controlState.innerText = "小车离线";
+        controlState.className = "warn";
+        return;
+      }
+      if (data.type === "campus_state") {
+        mergeCampusState(data);
+        return;
+      }
+      if (data.type === "error") {
+        inputState.innerText = data.msg || "服务端拒绝";
+        inputState.className = "warn";
+        return;
+      }
+      // car sent real status data → car is online
+      if (!carOnline) {
+        carOnline = true;
+        controlState.innerText = "已连接";
+        controlState.className = "ok";
+      }
+      applyRemoteStatus(data);
+      updateLatency(data);
+      formatStatus(data);
+    } catch {
+      statusEl.innerText = event.data;
+    }
+  };
+
+  controlWs.onclose = () => {
+    carOnline = false;
+    controlState.innerText = "已断开";
+    controlState.className = "";
+    connectBtn.disabled = false;
+    stopSendLoop();
+    manualControlEnabled = true;
+    updateControlModeUi("idle");
+  };
+
+  controlWs.onerror = () => {
+    carOnline = false;
+    controlState.innerText = "连接失败";
+    controlState.className = "warn";
+  };
+
+  videoWs.onopen = () => {
+    videoState.innerText = "已连服务器";
+    videoState.className = "";
+  };
+
+  videoWs.onclose = () => {
+    videoState.innerText = "已断开";
+    videoState.className = "";
+    videoFps = 0;
+    updateLatency(null);
+  };
+
+  videoWs.onerror = () => {
+    videoState.innerText = "连接失败";
+    videoState.className = "warn";
+  };
+
+  videoWs.onmessage = (event) => {
+    const nowMs = Date.now();
+    if (lastVideoAt > 0) {
+      const instantFps = 1000 / Math.max(1, nowMs - lastVideoAt);
+      videoFps = videoFps > 0 ? 0.8 * videoFps + 0.2 * instantFps : instantFps;
+    }
+    lastVideoAt = nowMs;
+    updateLatency(null);
+    if (videoFps > 0) {
+      videoState.innerText = `接收中 ${videoFps.toFixed(1)} fps`;
+      videoState.className = "ok";
+    }
+
+    const blob = new Blob([event.data], { type: "image/jpeg" });
+    const url = URL.createObjectURL(blob);
+    const img = document.getElementById("video");
+    img.src = url;
+    img.onload = () => URL.revokeObjectURL(url);
+  };
+
+  // ── 音频助手通道：只过文字/控制命令，不传音频 ──
+  audioWs = new WebSocket(`${server}/web/audio${wsAuthSuffix()}`);
+  audioOn = false;
+  audioDraftEl = null;
+  audioWs.onopen = () => {
+    audioState.innerText = "已连接（音频关）";
+    audioToggleBtn.disabled = false;
+    ttsBtn.disabled = false;
+    setAudioToggleUi(false);
+  };
+  audioWs.onmessage = (event) => {
+    let m;
+    try { m = JSON.parse(event.data); } catch { return; }
+    handleAudioMessage(m);
+  };
+  audioWs.onclose = () => {
+    audioState.innerText = "已断开";
+    audioToggleBtn.disabled = true;
+    ttsBtn.disabled = true;
+    setAudioToggleUi(false);
+  };
+  audioWs.onerror = () => { audioState.innerText = "错误"; };
+}
+
+function audioSend(obj) {
+  if (audioWs && audioWs.readyState === WebSocket.OPEN) {
+    audioWs.send(JSON.stringify(obj));
+    return true;
+  }
+  return false;
+}
+
+function setAudioToggleUi(on) {
+  audioOn = on;
+  audioToggleBtn.innerHTML = on ? "&#9209; 关闭音频" : "&#127908; 开启音频";
+  audioToggleBtn.classList.toggle("on", on);
+}
+
+function audioAppend(role, text, cls) {
+  const div = document.createElement("div");
+  div.className = "audio-line " + (cls || "");
+  div.textContent = role + text;
+  audioLog.appendChild(div);
+  audioLog.scrollTop = audioLog.scrollHeight;
+  return div;
+}
+
+function handleAudioMessage(m) {
+  if (m.type === "asr") {
+    if (!m.final) {
+      if (!audioDraftEl) audioDraftEl = audioAppend("你说: ", m.text || "", "draft");
+      else audioDraftEl.textContent = "你说: " + (m.text || "");
+    } else {
+      if (audioDraftEl) {
+        audioDraftEl.textContent = "你说: " + (m.text || "");
+        audioDraftEl.className = "audio-line user";
+        audioDraftEl = null;
+      } else {
+        audioAppend("你说: ", m.text || "", "user");
+      }
+    }
+  } else if (m.type === "answer") {
+    audioAppend("助手: ", m.text || "", "bot");
+  } else if (m.type === "audio_status") {
+    audioAppend("", m.text || "", "sys");
+    if (m.online === false || (m.text || "").includes("离线")) {
+      setAudioToggleUi(false);
+      audioState.innerText = "音频助手离线";
+      return;
+    }
+    if (m.online === true && typeof m.on !== "boolean") {
+      audioState.innerText = audioOn ? "已开启（说话试试）" : "已连接（音频关）";
+      return;
+    }
+    if (typeof m.on === "boolean") {
+      setAudioToggleUi(m.on);
+      audioState.innerText = m.on ? "已开启（说话试试）" : "已连接（音频关）";
+    }
+  }
+}
+
+function websocketReady() {
+  return controlWs && controlWs.readyState === WebSocket.OPEN;
+}
+
+let statusRawMode = false;
+
+  const STATUS_LABELS = {
+    car_net_time: "车端时间",
+    vx: "X速度", vy: "Y速度", wz: "Z角速度",
+    speed: "速度", estop: "急停",
+    manual_enable: "手动模式", source: "输入源",
+    battery: "电池", voltage: "电压",
+    line_follow: "巡线", action: "动作",
+    control_owner: "控制权", control_owner_priority: "控制优先级",
+    last_cmd_age_ms: "命令间隔(ms)", video_enabled: "视频上传",
+    fps: "帧率", latency: "延迟",
+    motor_left: "左电机", motor_right: "右电机",
+    sensor_left: "左传感器", sensor_right: "右传感器",
+    timestamp_ms: "时间戳",
+  };
+
+  function setLocalMode(mode, text) {
+    localControlMode = mode;
+    if (modeState) modeState.innerText = text || mode;
+  }
+
+  function applyRemoteStatus(data) {
+    if (!data || typeof data !== "object") return;
+    if (typeof data.control_owner === "string") {
+      const owner = data.control_owner;
+      setLocalMode(owner, owner);
+      estopLatched = owner === "estop";
+      manualControlEnabled = owner !== "line_follow";
+      updateControlModeUi(owner);
+    }
+  }
+
+  function formatStatus(data) {
+    if (statusRawMode || !data || typeof data !== "object" || Array.isArray(data)) {
+      statusEl.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      return;
+    }
+    const lines = [];
+    for (const [key, value] of Object.entries(data)) {
+      if (key === "type" || key === "seq") continue;
+      const label = STATUS_LABELS[key] || key;
+      const display = typeof value === "number" ? Number(value).toFixed(3).replace(/\.?0+$/, "") : String(value);
+      lines.push(`${label}: ${display}`);
+    }
+    statusEl.textContent = lines.join("\n") || "暂无数据";
+  }
+
+  function updateLatency(status) {
+  const parts = [];
+  if (status && typeof status.car_net_time === "number") {
+    const ageMs = Math.max(0, Date.now() - status.car_net_time * 1000);
+    parts.push(`${Math.round(ageMs)} ms`);
+  }
+  if (videoFps > 0) {
+    parts.push(`${videoFps.toFixed(1)} fps`);
+  }
+  latencyState.innerText = parts.length ? parts.join(" / ") : "--";
+}
+
+function currentSpeed() {
+  return clamp(Number(speedEl.value) || MIN_ACTIVE_SPEED, MIN_ACTIVE_SPEED, 1);
+}
+
+function sendPacket(vector, source, options = {}) {
+  if (!websocketReady()) return;
+
+  const action = options.action || "";
+  const estop = options.estop ? 1 : 0;
+  if (!canSendAction(action, estop)) {
+    inputState.innerText = estop ? "请先登录再急停" : "无驾驶权限";
+    inputState.className = "warn";
+    return;
+  }
+  const manualEnable = options.manualEnable !== undefined
+    ? options.manualEnable
+    : (AUTO_ACTIONS.has(action) ? 0 : 1);
+  const speed = estop || manualEnable === 0 || ZERO_SPEED_ACTIONS.has(action)
+    ? 0
+    : currentSpeed();
+  const packet = {
+    type: "remote_cmd",
+    seq: seq++,
+    manual_enable: manualEnable,
+    vx: round3(clamp(vector.vx, -1, 1)),
+    vy: round3(clamp(vector.vy, -1, 1)),
+    wz: round3(clamp(vector.wz, -1, 1)),
+    speed: round3(speed),
+    estop,
+    source,
+    control_mode: options.controlMode || localControlMode,
+    timestamp_ms: Date.now()
+  };
+
+  if (action) packet.action = action;
+  controlWs.send(JSON.stringify(packet));
+}
+
+function updateControlModeUi(modeOverride) {
+  releaseBtn.innerText = manualControlEnabled ? "释放遥控" : "接管遥控";
+  inputState.innerText = estopLatched ? "急停锁定" : (manualControlEnabled ? "空闲" : "巡线");
+  inputState.className = "";
+  setLocalMode(modeOverride || (estopLatched ? "estop" : (manualControlEnabled ? "remote" : "line_follow")));
+  updateControlButtons();
+}
+
+function keyboardVector() {
+  let vx = 0;
+  let vy = 0;
+  let wz = 0;
+
+  if (keyState.has("w") || keyState.has("arrowup")) vy += 1;
+  if (keyState.has("s") || keyState.has("arrowdown")) vy -= 1;
+  if (keyState.has("a")) vx -= 1;
+  if (keyState.has("d")) vx += 1;
+  if (keyState.has("q") || keyState.has("arrowleft")) wz += 1;
+  if (keyState.has("e") || keyState.has("arrowright")) wz -= 1;
+
+  return {vx: clamp(vx, -1, 1), vy: clamp(vy, -1, 1), wz: clamp(wz, -1, 1)};
+}
+
+function gamepadVector() {
+  if (!navigator.getGamepads) return null;
+  const pads = navigator.getGamepads();
+  let pad = null;
+
+  for (const item of pads) {
+    if (item) {
+      pad = item;
+      break;
+    }
+  }
+
+  if (!pad) {
+    gamepadState.innerText = "未检测";
+    return null;
+  }
+
+  gamepadState.innerText = pad.id || "已连接";
+
+  if (pad.buttons[1] && pad.buttons[1].pressed) {
+    estopBurst = 15;
+    estopLatched = true;
+    updateControlModeUi("estop");
+  }
+
+  if (pad.buttons[0] && pad.buttons[0].pressed) {
+    return {vx: 0, vy: 0, wz: 0, action: "STOP"};
+  }
+
+  if (pad.buttons[15] && pad.buttons[15].pressed) return {...ACTION_TO_VECTOR.RIGHT, action: "RIGHT"};
+  if (pad.buttons[14] && pad.buttons[14].pressed) return {...ACTION_TO_VECTOR.LEFT, action: "LEFT"};
+  if (pad.buttons[12] && pad.buttons[12].pressed) return {...ACTION_TO_VECTOR.FORWARD, action: "FORWARD"};
+  if (pad.buttons[13] && pad.buttons[13].pressed) return {...ACTION_TO_VECTOR.BACKWARD, action: "BACKWARD"};
+
+  const leftX = deadzone(pad.axes[0] || 0);
+  const leftY = deadzone(pad.axes[1] || 0);
+  const rightX = deadzone(pad.axes[2] || 0);
+  const trigger = pad.buttons[7] ? pad.buttons[7].value : 0;
+
+  if (trigger > GAMEPAD_TRIGGER_DEADBAND) {
+    speedEl.value = String(round3(clamp(trigger, MIN_ACTIVE_SPEED, 1)));
+    speedValue.innerText = Number(speedEl.value).toFixed(2);
+    window.localStorage.setItem(SPEED_STORAGE_KEY, String(currentSpeed()));
+  }
+
+  return {
+    vx: clamp(leftX, -1, 1),
+    vy: clamp(-leftY, -1, 1),
+    wz: clamp(-rightX, -1, 1)
+  };
+}
+
+function activeInput() {
+  if (estopBurst > 0) {
+    estopBurst -= 1;
+    return {vector: {vx: 0, vy: 0, wz: 0}, source: "estop", action: "ESTOP", estop: true};
+  }
+
+  if (estopLatched) {
+    return null;
+  }
+
+  if (buttonAction) {
+    const vector = ACTION_TO_VECTOR[buttonAction] || ACTION_TO_VECTOR.STOP;
+    return {vector, source: "button", action: buttonAction, estop: buttonAction === "ESTOP"};
+  }
+
+  const gp = gamepadVector();
+  if (gp && (vectorActive(gp) || gp.action)) {
+    return {
+      vector: {vx: gp.vx, vy: gp.vy, wz: gp.wz},
+      source: "gamepad",
+      action: gp.action || "",
+      estop: false
+    };
+  }
+
+  const kv = keyboardVector();
+  if (vectorActive(kv)) {
+    return {vector: kv, source: "keyboard", action: "", estop: false};
+  }
+
+  return null;
+}
+
+function tickSend() {
+  const input = activeInput();
+
+  if (!manualControlEnabled) {
+    if (input) {
+      manualControlEnabled = true;
+      if (!input.estop) {
+        sendPacket(ACTION_TO_VECTOR.STOP_AUTO, "manual-takeover", {
+          action: "STOP_AUTO",
+          manualEnable: 1,
+          controlMode: "remote"
+        });
+      }
+      updateControlModeUi(input.estop ? "estop" : "remote");
+    } else {
+      sendPacket(ACTION_TO_VECTOR.STOP, "line_follow_heartbeat", {
+        manualEnable: 0,
+        controlMode: "line_follow"
+      });
+      inputState.innerText = "巡线";
+      return;
+    }
+  }
+
+  if (estopLatched) {
+    inputState.innerText = "急停锁定";
+    previousActive = false;
+    idleStopBurst = 0;
+    return;
+  }
+
+  if (input) {
+    sendPacket(input.vector, input.source, {
+      action: input.action,
+      estop: input.estop,
+      controlMode: input.estop ? "estop" : "remote"
+    });
+    if (input.estop) {
+      estopLatched = true;
+      updateControlModeUi("estop");
+    } else {
+      updateControlModeUi("remote");
+    }
+    inputState.innerText = input.source;
+    previousActive = true;
+    idleStopBurst = 10;
+    return;
+  }
+
+  if (previousActive || idleStopBurst > 0) {
+    sendPacket(ACTION_TO_VECTOR.STOP, "idle", {action: "STOP", controlMode: "idle"});
+    inputState.innerText = "停车";
+    idleStopBurst -= 1;
+    if (idleStopBurst <= 0) previousActive = false;
+  } else {
+    inputState.innerText = "空闲";
+  }
+}
+
+function startSendLoop() {
+  if (!sendTimer) {
+    sendTimer = window.setInterval(tickSend, 33);
+  }
+  if (!gamepadLoopStarted) {
+    gamepadLoopStarted = true;
+    window.requestAnimationFrame(pollGamepadState);
+  }
+}
+
+function stopSendLoop() {
+  if (sendTimer) {
+    window.clearInterval(sendTimer);
+    sendTimer = null;
+  }
+}
+
+function pollGamepadState() {
+  gamepadVector();
+  window.requestAnimationFrame(pollGamepadState);
+}
+
+function releaseRemote() {
+  if (!websocketReady()) {
+    inputState.innerText = "控制未连接";
+    return;
+  }
+  if (estopLatched) {
+    clearEstop("release-clear-estop");
+    return;
+  }
+
+  keyState.clear();
+  buttonAction = null;
+  activePointerId = null;
+  idleStopBurst = 0;
+  previousActive = false;
+
+  if (manualControlEnabled) {
+    manualControlEnabled = false;
+    sendPacket(ACTION_TO_VECTOR.STOP, "release", {
+      action: "START_LINE_FOLLOW",
+      manualEnable: 0,
+      controlMode: "line_follow"
+    });
+  } else {
+    manualControlEnabled = true;
+    idleStopBurst = 8;
+    previousActive = true;
+    sendPacket(ACTION_TO_VECTOR.STOP_AUTO, "takeover", {
+      action: "STOP_AUTO",
+      manualEnable: 1,
+      controlMode: "idle"
+    });
+  }
+  updateControlModeUi();
+}
+
+function startLineFollow() {
+  if (!websocketReady()) {
+    inputState.innerText = "控制未连接";
+    return;
+  }
+  if (estopLatched) {
+    inputState.innerText = "请先解除急停";
+    return;
+  }
+  keyState.clear();
+  buttonAction = null;
+  activePointerId = null;
+  idleStopBurst = 0;
+  previousActive = false;
+  manualControlEnabled = false;
+  sendPacket(ACTION_TO_VECTOR.START_LINE_FOLLOW, "auto", {
+    action: "START_LINE_FOLLOW",
+    manualEnable: 0,
+    controlMode: "line_follow"
+  });
+  updateControlModeUi("line_follow");
+}
+
+function stopAutoMode() {
+  keyState.clear();
+  buttonAction = null;
+  activePointerId = null;
+  idleStopBurst = 8;
+  previousActive = true;
+  manualControlEnabled = true;
+  sendPacket(ACTION_TO_VECTOR.STOP_AUTO, "auto-stop", {
+    action: "STOP_AUTO",
+    manualEnable: 1,
+    controlMode: "idle"
+  });
+  updateControlModeUi("idle");
+  inputState.innerText = "停止自动";
+}
+
+function clearEstop(source = "clear-estop") {
+  keyState.clear();
+  buttonAction = null;
+  activePointerId = null;
+  estopBurst = 0;
+  estopLatched = false;
+  manualControlEnabled = true;
+  idleStopBurst = 0;
+  previousActive = false;
+  sendPacket(ACTION_TO_VECTOR.CLEAR_ESTOP, source,
+  {
+    action: "CLEAR_ESTOP",
+    manualEnable: 1,
+    controlMode: "idle"
+  });
+  updateControlModeUi("idle");
+  inputState.innerText = "解除急停";
+}
+
+function disconnectAll() {
+  carOnline = false;
+  manualControlEnabled = true;
+  sendPacket(ACTION_TO_VECTOR.STOP, "disconnect", {action: "STOP", manualEnable: 1, controlMode: "idle"});
+  updateControlModeUi("idle");
+  window.setTimeout(() => {
+    if (controlWs) controlWs.close();
+    if (videoWs) videoWs.close();
+    if (audioWs) { try { if (audioOn) audioSend({ type: "audio_stop" }); } catch (e) {} audioWs.close(); }
+    controlWs = null;
+    videoWs = null;
+    audioWs = null;
+    stopSendLoop();
+    controlState.innerText = "已断开";
+    controlState.className = "";
+    videoState.innerText = "已断开";
+    videoState.className = "";
+    inputState.innerText = "空闲";
+    audioState.innerText = "未连接";
+    audioToggleBtn.disabled = true;
+    ttsBtn.disabled = true;
+    setAudioToggleUi(false);
+    connectBtn.disabled = false;
+  }, 80);
+}
+
+loginBtn.addEventListener("click", () => loginOrRegister("login"));
+registerBtn.addEventListener("click", () => loginOrRegister("register"));
+logoutBtn.addEventListener("click", logout);
+requestDriverBtn.addEventListener("click", requestDriver);
+startRunBtn.addEventListener("click", startRun);
+endRunBtn.addEventListener("click", endRun);
+refreshAdminBtn.addEventListener("click", refreshAdmin);
+revokeLeaseBtn.addEventListener("click", revokeLease);
+loadRunsBtn.addEventListener("click", loadRuns);
+loadAuditBtn.addEventListener("click", loadAudit);
+passwordEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    loginOrRegister("login");
+  }
+});
+connectBtn.addEventListener("click", connectAll);
+disconnectBtn.addEventListener("click", disconnectAll);
+releaseBtn.addEventListener("click", releaseRemote);
+document.getElementById("startLineFollowBtn").addEventListener("click", startLineFollow);
+document.getElementById("stopAutoBtn").addEventListener("click", stopAutoMode);
+document.getElementById("clearEstopBtn").addEventListener("click", () => clearEstop());
+
+audioToggleBtn.addEventListener("click", () => {
+  const next = !audioOn;
+  if (!audioSend({ type: next ? "audio_start" : "audio_stop" })) return;
+  setAudioToggleUi(next);
+  audioState.innerText = next ? "已开启（说话试试）" : "已连接（音频关）";
+});
+ttsBtn.addEventListener("click", () => {
+  const t = (ttsText.value || "").trim();
+  if (!t) return;
+  if (!audioSend({ type: "tts", text: t })) return;
+  audioAppend("播报: ", t, "sys");
+  ttsText.value = "";
+});
+ttsText.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); ttsBtn.click(); } });
+
+speedEl.addEventListener("input", () => {
+  if (Number(speedEl.value) < MIN_ACTIVE_SPEED) {
+    speedEl.value = String(MIN_ACTIVE_SPEED);
+  }
+  speedValue.innerText = Number(speedEl.value).toFixed(2);
+  window.localStorage.setItem(SPEED_STORAGE_KEY, String(currentSpeed()));
+});
+
+document.querySelectorAll("#buttonPad button").forEach((button) => {
+  const clearButtonAction = (event) => {
+    if (activePointerId !== null && event.pointerId !== activePointerId) return;
+    if (buttonAction === button.dataset.action) buttonAction = null;
+    activePointerId = null;
+  };
+
+  button.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    if (button.dataset.action === "STOP" && estopLatched) {
+      clearEstop("stop-clear-estop");
+      return;
+    }
+    activePointerId = event.pointerId;
+    if (button.setPointerCapture) button.setPointerCapture(event.pointerId);
+    buttonAction = button.dataset.action;
+    if (buttonAction === "ESTOP") {
+      estopBurst = 15;
+      updateControlModeUi("estop");
+    }
+  });
+  button.addEventListener("pointerup", clearButtonAction);
+  button.addEventListener("pointercancel", clearButtonAction);
+  button.addEventListener("lostpointercapture", clearButtonAction);
+  button.addEventListener("click", () => {
+    if (button.dataset.action === "STOP") {
+      if (estopLatched) {
+        clearEstop("stop-clear-estop");
+        return;
+      }
+      idleStopBurst = 8;
+      previousActive = true;
+    }
+  });
+});
+
+function isEditingInput() {
+  const el = document.activeElement;
+  if (!el) return false;
+  const tag = el.tagName;
+  if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return true;
+  return el.isContentEditable;
+}
+
+window.addEventListener("keydown", (event) => {
+  if (isEditingInput()) return;
+  const key = event.key.toLowerCase();
+  if (!CONTROL_KEYS.has(key)) return;
+  event.preventDefault();
+  if (key === " ") {
+    if (estopLatched) {
+      clearEstop("space-clear-estop");
+      return;
+    }
+    idleStopBurst = 8;
+    previousActive = true;
+    return;
+  }
+  keyState.add(key);
+});
+
+window.addEventListener("keyup", (event) => {
+  if (isEditingInput()) return;
+  const key = event.key.toLowerCase();
+  if (!CONTROL_KEYS.has(key)) return;
+  event.preventDefault();
+  keyState.delete(key);
+});
+
+window.addEventListener("blur", () => {
+  keyState.clear();
+  buttonAction = null;
+  activePointerId = null;
+  if (manualControlEnabled) {
+    idleStopBurst = 8;
+    previousActive = true;
+  }
+});
+
+window.addEventListener("pagehide", () => {
+  sendPacket(ACTION_TO_VECTOR.STOP, "pagehide", {action: "STOP", manualEnable: 1, controlMode: "idle"});
+});
+
+updateControlModeUi("idle");
+
+window.addEventListener("gamepadconnected", (event) => {
+  gamepadState.innerText = event.gamepad.id || "已连接";
+  startSendLoop();
+});
+
+window.addEventListener("gamepaddisconnected", () => {
+  gamepadState.innerText = "已断开";
+});
+
+loadSettings();
+updateCampusUi();
+refreshMe().then((data) => {
+  if (data && data.permissions && data.permissions.authenticated) {
+    connectAll();
+    if (data.permissions.is_admin) refreshAdmin();
+  }
+});
+
+  // ── 深色模式切换 ──
+  const THEME_KEY = "carRelayConsoleTheme";
+  const themeBtn = document.getElementById("themeBtn");
+  function applyTheme(mode) {
+    document.body.classList.remove("dark", "light");
+    if (mode === "dark") document.body.classList.add("dark");
+    else if (mode === "light") document.body.classList.add("light");
+    themeBtn.innerHTML = document.body.classList.contains("dark") ? "&#9788;" : "&#127769;";
+    window.localStorage.setItem(THEME_KEY, mode);
+  }
+  themeBtn.addEventListener("click", () => {
+    const next = document.body.classList.contains("dark") ? "light" : "dark";
+    applyTheme(next);
+  });
+  (function initTheme() {
+    const saved = window.localStorage.getItem(THEME_KEY);
+    if (saved) { applyTheme(saved); return; }
+    applyTheme("dark");
+  })();
+
+  // ── 状态面板原始/友好切换 ──
+  document.getElementById("statusRawBtn").addEventListener("click", function() {
+    statusRawMode = !statusRawMode;
+    this.textContent = statusRawMode ? "友好" : "原始";
+  });
+
+  // ── 全屏切换 ──
+  document.getElementById("fullscreenBtn").addEventListener("click", function() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const el = document.documentElement;
+      if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  });
+  document.addEventListener("fullscreenchange", () => {
+    document.getElementById("fullscreenBtn").innerHTML = document.fullscreenElement ? "&#x2716;" : "&#x26F6;";
+  });
+  document.addEventListener("webkitfullscreenchange", () => {
+    document.getElementById("fullscreenBtn").innerHTML = document.webkitFullscreenElement ? "&#x2716;" : "&#x26F6;";
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+[Unit]
+Description=Load PYNQ hp1 merged bitstream for camera audio mecanum motor
+After=local-fs.target
+
+[Service]
+Type=oneshot
+User=root
+RemainAfterExit=yes
+ExecStart=/opt/python3.6/bin/python3.6 /home/xilinx/load_hp1_bitstream.py --bitfile /home/xilinx/jupyter_notebooks/ov5640_audio_mecanum_hp1.bit --delay 8
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#fafafa">
+  <title>小车遥控台</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #fafafa; --card: #fff; --border: #e5e5e5;
+      --text: #171717; --text2: #737373; --text3: #a3a3a3;
+      --accent: #171717; --danger: #dc2626; --success: #16a34a;
+      --font: 'Inter','PingFang SC','Microsoft YaHei',system-ui,sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not(.light) {
+        --bg: #0a0a0a; --card: #171717; --border: #262626;
+        --text: #fafafa; --text2: #a3a3a3; --text3: #737373;
+      }
+    }
+    body.dark { --bg:#0a0a0a;--card:#171717;--border:#262626;--text:#fafafa;--text2:#a3a3a3;--text3:#737373; }
+
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh;-webkit-user-select:none;user-select:none}
+    input,textarea{-webkit-user-select:text;user-select:text}
+
+    /* Top bar */
+    .bar{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap}
+    .bar .title{font-weight:600;font-size:14px;margin-right:4px;white-space:nowrap}
+    .bar .conn-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
+    .bar .conn-dot.on{background:var(--success)}
+    .bar .conn-dot.off{background:var(--danger)}
+    .bar .conn-text{font-size:12px;color:var(--text2);white-space:nowrap}
+    .bar input{height:32px;padding:0 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);font:13px var(--font);outline:none}
+    .bar input:focus{border-color:var(--text3)}
+    .bar .spacer{flex:1}
+
+    button{height:32px;padding:0 12px;border:1px solid var(--border);border-radius:5px;background:var(--card);color:var(--text);font:500 13px var(--font);cursor:pointer;outline:none;white-space:nowrap;transition:all .1s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;-webkit-touch-callout:none}
+    button:hover{background:var(--bg)}
+    button:active{opacity:.7}
+    button:disabled{opacity:.35;pointer-events:none}
+    button.primary{background:var(--text);color:var(--bg);border-color:var(--text)}
+    button.primary:hover{opacity:.85}
+    button.small{height:28px;padding:0 8px;font-size:12px}
+
+    /* Main */
+    .main{display:grid;grid-template-columns:1fr 300px;gap:12px;padding:12px;max-width:1100px;margin:0 auto}
+
+    /* Video */
+    .video-box{background:#000;border-radius:6px;overflow:hidden}
+    .video-box img{display:block;width:100%;aspect-ratio:4/3;object-fit:contain}
+
+    .side{display:flex;flex-direction:column;gap:10px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:12px}
+    .card h3{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+
+    /* ── Desktop: Visual Keyboard ── */
+    .kb{display:flex;flex-direction:column;align-items:center;gap:4px;margin-bottom:6px}
+    .kb .row{display:flex;gap:4px}
+    .kb .row.r1{margin-right:22px} /* stagger */
+    .kb .key{
+      width:44px;height:44px;border:1px solid var(--border);border-radius:5px;
+      background:var(--bg);color:var(--text);font:600 15px var(--font);
+      display:flex;align-items:center;justify-content:center;
+      cursor:pointer;touch-action:none;
+      -webkit-tap-highlight-color:transparent;transition:all .08s;
+      user-select:none;
+    }
+    .kb .key:hover{background:var(--border)}
+    .kb .key:active,.kb .key.lit{background:var(--text);color:var(--bg);border-color:var(--text)}
+    .kb .key.space{width:136px;font-size:11px;font-weight:500}
+    .kb .key sub{display:block;font-size:9px;font-weight:400;opacity:.5;line-height:1;pointer-events:none;-webkit-user-select:none;user-select:none}
+    .kb-hint{text-align:center;font-size:11px;color:var(--text3);min-height:16px;margin-bottom:2px}
+
+    /* ── Mobile: Joystick ── */
+    .joy-area{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:6px}
+    .joy-outer{
+      width:200px;height:200px;border-radius:50%;background:var(--bg);
+      border:1.5px solid var(--border);position:relative;touch-action:none;
+      -webkit-touch-callout:none;
+    }
+    .joy-inner{
+      width:56px;height:56px;border-radius:50%;background:var(--text);
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      transition:transform .12s ease-out;opacity:.6;
+    }
+    .joy-outer.active .joy-inner{opacity:1;transition:none}
+    .joy-btns{display:flex;gap:10px;align-items:center}
+    .joy-btns button{width:52px;height:52px;font-size:18px;display:flex;align-items:center;justify-content:center;touch-action:none;-webkit-touch-callout:none}
+    .joy-btns button.estop{width:64px;color:var(--danger);border-color:var(--danger);font-weight:700;font-size:14px}
+    .joy-btns button.estop:active{background:var(--danger);color:#fff}
+
+    /* Controls shared */
+    .speed{display:flex;align-items:center;gap:8px;margin:6px 0}
+    .speed label{font-size:11px;color:var(--text2);white-space:nowrap}
+    .speed input[type=range]{flex:1;accent-color:var(--text);height:4px}
+    .speed output{font-size:12px;font-weight:500}
+
+    /* Audio */
+    .audio-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .audio-log{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px;min-height:60px;max-height:140px;overflow:auto;font-size:12px;color:var(--text2);line-height:1.6}
+    .a-line{white-space:pre-wrap;word-break:break-word}
+    .a-line.user{color:#2563eb}.a-line.bot{color:#059669;font-weight:500}
+    .a-line.draft{color:var(--text3)}.a-line.sys{color:var(--text3);font-size:11px}
+    .audio-input-row{display:flex;gap:6px;margin-top:6px}
+    .audio-input-row input{flex:1;height:30px;padding:0 8px;border:1px solid var(--border);border-radius:5px;background:var(--bg);color:var(--text);font:12px var(--font);outline:none}
+
+    /* Desktop-only / Mobile-only */
+    .dt-only{display:block}.mb-only{display:none}
+    @media(max-width:750px){
+      .main{grid-template-columns:1fr;padding:8px;gap:8px}
+      .bar{padding:6px 8px;gap:5px}
+      .bar .title{font-size:13px}
+      .dt-only{display:none}.mb-only{display:block}
+      .card{padding:8px}
+      .joy-outer{width:180px;height:180px}
+    }
+    @media(max-width:420px){
+      .joy-outer{width:160px;height:160px}
+      .joy-inner{width:50px;height:50px}
+      .joy-btns button{width:48px;height:48px;font-size:16px}
+    }
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+  </style>
+</head>
+<body>
+<div class="bar">
+  <span class="title">小车遥控台</span>
+  <span class="conn-dot" id="connDot"></span>
+  <span class="conn-text" id="connText">未连接</span>
+  <span class="spacer"></span>
+  <input id="server" type="hidden">
+  <input id="token" type="password" autocomplete="off" placeholder="Token">
+  <button class="primary" id="connectBtn">连接</button>
+  <button id="disconnectBtn">断开</button>
+</div>
+
+<div class="main">
+  <div class="video-box"><img id="video" alt=""></div>
+  <div class="side">
+    <div class="card">
+      <h3>遥控</h3>
+
+      <!-- Desktop: Visual Keyboard -->
+      <div class="dt-only">
+        <div class="kb" id="visualKb">
+          <div class="row r1">
+            <button class="key" data-key="q">Q<sub>↺</sub></button>
+            <button class="key" data-key="w">W<sub>↑</sub></button>
+            <button class="key" data-key="e">E<sub>↻</sub></button>
+          </div>
+          <div class="row">
+            <button class="key" data-key="a">A<sub>←</sub></button>
+            <button class="key" data-key="s">S<sub>↓</sub></button>
+            <button class="key" data-key="d">D<sub>→</sub></button>
+          </div>
+          <div class="row">
+            <button class="key space" data-key=" ">Space ■</button>
+          </div>
+        </div>
+        <div class="kb-hint" id="kbHint">WASD 移动 · Q/E 旋转 · Space 停车</div>
+      </div>
+
+      <!-- Mobile: Joystick -->
+      <div class="mb-only">
+        <div class="joy-area" id="joyArea">
+          <div class="joy-outer" id="joyOuter">
+            <div class="joy-inner" id="joyInner"></div>
+          </div>
+          <div class="joy-btns">
+            <button data-action="ROTATE_LEFT" class="jrot">↺</button>
+            <button class="estop" data-action="ESTOP">急停</button>
+            <button data-action="ROTATE_RIGHT" class="jrot">↻</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="speed">
+        <label>速度</label>
+        <input id="speed" type="range" min="0.18" max="1" step="0.01" value="0.40">
+        <output id="speedValue">0.40</output>
+      </div>
+      <button id="releaseBtn" style="width:100%">释放遥控</button>
+    </div>
+
+    <div class="card">
+      <h3>语音助手</h3>
+      <div class="audio-row">
+        <button class="small" id="audioToggleBtn" disabled>开启</button>
+        <span style="font-size:11px;color:var(--text2)" id="audioState">未连接</span>
+      </div>
+      <div class="audio-log" id="audioLog"><div class="a-line sys">连接后可用。</div></div>
+      <div class="audio-input-row">
+        <input id="ttsText" type="text" placeholder="输入文字播报..." autocomplete="off">
+        <button class="small" id="ttsBtn" disabled>播报</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var $=function(id){return document.getElementById(id)};
+
+// ── WebSocket & control state ──
+var controlWs=null,videoWs=null,audioWs=null;
+var audioOn=false,audioDraftEl=null;
+var seq=1,buttonAction=null,previousActive=false;
+var idleStopBurst=0,sendTimer=null,estopBurst=0;
+var activePointerId=null,manualControlEnabled=true;
+var carOnline=false,lastVideoAt=0,videoFps=0;
+var gamepadLoopStarted=false;
+var keyState={};
+
+// ── Joystick state ──
+var joyActive=false,joyVX=0,joyVY=0;
+
+// ── Constants ──
+var SK="carRelayServer",TK="carRelayToken",PK="carRelaySpeed";
+var MIN_SP=0.18,GP_DEAD=0.15;
+var AV={FORWARD:{vx:0,vy:1,wz:0},BACKWARD:{vx:0,vy:-1,wz:0},LEFT:{vx:-1,vy:0,wz:0},RIGHT:{vx:1,vy:0,wz:0},ROTATE_LEFT:{vx:0,vy:0,wz:1},ROTATE_RIGHT:{vx:0,vy:0,wz:-1},STOP:{vx:0,vy:0,wz:0},ESTOP:{vx:0,vy:0,wz:0}};
+var CK={w:1,a:1,s:1,d:1,q:1,e:1,arrowup:1,arrowdown:1,arrowleft:1,arrowright:1," ":1};
+
+// ── DOM refs ──
+var serverEl=$("server"),tokenEl=$("token"),connectBtn=$("connectBtn"),disconnectBtn=$("disconnectBtn");
+var connDot=$("connDot"),connText=$("connText");
+var speedEl=$("speed"),speedValue=$("speedValue"),releaseBtn=$("releaseBtn");
+var audioToggleBtn=$("audioToggleBtn"),audioState=$("audioState"),audioLog=$("audioLog"),ttsText=$("ttsText"),ttsBtn=$("ttsBtn");
+var kbHint=$("kbHint");
+var joyOuter=$("joyOuter"),joyInner=$("joyInner");
+
+// ── Utils ──
+function cl(v,l,h){return Math.max(l,Math.min(h,v))}
+function r3(v){return Math.round(v*1000)/1000}
+function dz(v,t){if(Math.abs(v)<t)return 0;var s=Math.sign(v);return s*(Math.abs(v)-t)/(1-t)}
+function va(v){return Math.max(Math.abs(v.vx),Math.abs(v.vy),Math.abs(v.wz))>0.01}
+function ie(){var e=document.activeElement;if(!e)return false;var t=e.tagName;return t==="INPUT"||t==="TEXTAREA"||t==="SELECT"||e.isContentEditable}
+function wsOk(){return controlWs&&controlWs.readyState===WebSocket.OPEN}
+function cs(){return cl(Number(speedEl.value)||MIN_SP,MIN_SP,1)}
+
+function defaultServerUrl(){
+  var p=window.location.protocol;
+  if(p==="http:"||p==="https:")return(p==="https:"?"wss":"ws")+"://"+window.location.host;
+  return"ws://127.0.0.1:8000";
+}
+
+function loadSettings(){
+  serverEl.value=window.localStorage.getItem(SK)||defaultServerUrl();
+  tokenEl.value=window.localStorage.getItem(TK)||"";
+  var sv=Number(window.localStorage.getItem(PK));
+  if(Number.isFinite(sv)&&sv>=MIN_SP&&sv<=1)speedEl.value=String(sv);
+  speedValue.textContent=Number(speedEl.value).toFixed(2);
+}
+function saveSettings(s,t){window.localStorage.setItem(SK,s);window.localStorage.setItem(TK,t);window.localStorage.setItem(PK,String(cs()))}
+
+// ── Connection UI ──
+function setConn(state,text){
+  connDot.className="conn-dot "+(state||"");
+  connText.textContent=text||"";
+}
+function updateModeUi(){releaseBtn.textContent=manualControlEnabled?"释放遥控":"接管遥控"}
+
+// ── Send packet ──
+function sendPacket(v,src,opts){
+  if(!wsOk())return;opts=opts||{};
+  var act=opts.action||"",es=opts.estop?1:0,man=opts.manualEnable===0?0:1;
+  var sp=es||man===0||act==="STOP"||act==="ESTOP"?0:cs();
+  var p={type:"remote_cmd",seq:seq++,manual_enable:man,vx:r3(cl(v.vx,-1,1)),vy:r3(cl(v.vy,-1,1)),wz:r3(cl(v.wz,-1,1)),speed:r3(sp),estop:es,source:src,timestamp_ms:Date.now()};
+  if(act)p.action=act;controlWs.send(JSON.stringify(p));
+}
+
+// ── Keyboard vector ──
+function kbV(){
+  var x=0,y=0,z=0;
+  if(keyState.w||keyState.arrowup)y+=1;if(keyState.s||keyState.arrowdown)y-=1;
+  if(keyState.a)x-=1;if(keyState.d)x+=1;
+  if(keyState.q||keyState.arrowleft)z+=1;if(keyState.e||keyState.arrowright)z-=1;
+  return{vx:cl(x,-1,1),vy:cl(y,-1,1),wz:cl(z,-1,1)};
+}
+
+// ── Gamepad vector ──
+function gpV(){
+  if(!navigator.getGamepads)return null;
+  var pads=navigator.getGamepads(),pad=null,i;
+  for(i=0;i<pads.length;i++){if(pads[i]){pad=pads[i];break}}
+  if(!pad)return null;
+  if(pad.buttons[1]&&pad.buttons[1].pressed)estopBurst=15;
+  if(pad.buttons[0]&&pad.buttons[0].pressed)return{vx:0,vy:0,wz:0,action:"STOP"};
+  if(pad.buttons[15]&&pad.buttons[15].pressed)return{vx:AV.RIGHT.vx,vy:AV.RIGHT.vy,wz:AV.RIGHT.wz,action:"RIGHT"};
+  if(pad.buttons[14]&&pad.buttons[14].pressed)return{vx:AV.LEFT.vx,vy:AV.LEFT.vy,wz:AV.LEFT.wz,action:"LEFT"};
+  if(pad.buttons[12]&&pad.buttons[12].pressed)return{vx:AV.FORWARD.vx,vy:AV.FORWARD.vy,wz:AV.FORWARD.wz,action:"FORWARD"};
+  if(pad.buttons[13]&&pad.buttons[13].pressed)return{vx:AV.BACKWARD.vx,vy:AV.BACKWARD.vy,wz:AV.BACKWARD.wz,action:"BACKWARD"};
+  var lx=dz(pad.axes[0]||0),ly=dz(pad.axes[1]||0),rx=dz(pad.axes[2]||0),tr=pad.buttons[7]?pad.buttons[7].value:0;
+  if(tr>GP_DEAD){speedEl.value=String(r3(cl(tr,MIN_SP,1)));speedValue.textContent=Number(speedEl.value).toFixed(2);window.localStorage.setItem(PK,String(cs()))}
+  return{vx:cl(lx,-1,1),vy:cl(-ly,-1,1),wz:cl(-rx,-1,1)};
+}
+
+// ── Joystick vector ──
+function joyV(){if(!joyActive)return null;return{vx:joyVX,vy:joyVY,wz:0};}
+
+// ── Active input (priority: estop > button > gamepad > joystick > keyboard) ──
+function ai(){
+  if(estopBurst>0){estopBurst-=1;return{vector:{vx:0,vy:0,wz:0},source:"estop",action:"ESTOP",estop:true}}
+  if(buttonAction){var v=AV[buttonAction]||AV.STOP;return{vector:v,source:"button",action:buttonAction,estop:buttonAction==="ESTOP"}}
+  var g=gpV();if(g&&(va(g)||g.action))return{vector:{vx:g.vx,vy:g.vy,wz:g.wz},source:"gamepad",action:g.action||"",estop:false};
+  var j=joyV();if(j&&va(j))return{vector:j,source:"joystick",action:"",estop:false};
+  var k=kbV();if(va(k))return{vector:k,source:"keyboard",action:"",estop:false};
+  return null;
+}
+
+function tick(){
+  if(!manualControlEnabled){if(estopBurst>0||buttonAction==="ESTOP"){manualControlEnabled=true;updateModeUi()}else{sendPacket(AV.STOP,"lf",{manualEnable:0});updateKbHint("巡线中");return}}
+  var inp=ai();
+  if(inp){sendPacket(inp.vector,inp.source,{action:inp.action,estop:inp.estop});updateKbHint(inp.source);previousActive=true;idleStopBurst=10;return}
+  if(previousActive||idleStopBurst>0){sendPacket(AV.STOP,"idle",{action:"STOP"});updateKbHint("停车");idleStopBurst-=1;if(idleStopBurst<=0)previousActive=false}
+  else{updateKbHint("");updateKbHighlights()}
+}
+
+function sLoop(){if(!sendTimer)sendTimer=window.setInterval(tick,33);if(!gamepadLoopStarted){gamepadLoopStarted=true;window.requestAnimationFrame(pollGp)}}
+function eLoop(){if(sendTimer){window.clearInterval(sendTimer);sendTimer=null}}
+function pollGp(){gpV();window.requestAnimationFrame(pollGp)}
+
+// ── Visual keyboard ──
+var kbKeys=document.querySelectorAll("#visualKb .key[data-key]");
+function updateKbHighlights(){
+  for(var i=0;i<kbKeys.length;i++){
+    var k=kbKeys[i],dk=k.dataset.key;
+    if(keyState[dk])k.classList.add("lit");else k.classList.remove("lit");
+  }
+}
+function updateKbHint(text){
+  if(!text){kbHint.textContent="WASD 移动 · Q/E 旋转 · Space 停车";return}
+  var dirs=[],k=keyState;
+  if(k.w||k.arrowup)dirs.push("↑");if(k.s||k.arrowdown)dirs.push("↓");
+  if(k.a)dirs.push("←");if(k.d)dirs.push("→");
+  if(k.q||k.arrowleft)dirs.push("↺");if(k.e||k.arrowright)dirs.push("↻");
+  if(dirs.length)kbHint.textContent=dirs.join(" ")+"  "+text;
+  else kbHint.textContent=text;
+  updateKbHighlights();
+}
+
+// Attach click handlers to visual keyboard keys
+for(var i=0;i<kbKeys.length;i++){(function(btn){
+  var dk=btn.dataset.key;
+  btn.addEventListener("pointerdown",function(ev){ev.preventDefault();btn.setPointerCapture(ev.pointerId);keyState[dk]=true;updateKbHighlights();if(dk===" "){idleStopBurst=8;previousActive=true}});
+  btn.addEventListener("pointerup",function(ev){keyState[dk]=false;updateKbHighlights()});
+  btn.addEventListener("pointercancel",function(ev){keyState[dk]=false;updateKbHighlights()});
+  btn.addEventListener("lostpointercapture",function(ev){keyState[dk]=false;updateKbHighlights()});
+})(kbKeys[i])}
+
+// ── Joystick ──
+(function(){
+  var outer=joyOuter,inner=joyInner,radius=0,active=false;
+  function getRadius(){return outer.clientWidth/2-25}
+  function updateJoystick(ex,ey){
+    radius=getRadius();var rect=outer.getBoundingClientRect();
+    var cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+    var dx=ex-cx,dy=ey-cy,dist=Math.sqrt(dx*dx+dy*dy);
+    if(dist>radius){dx=dx/dist*radius;dy=dy/dist*radius;dist=radius}
+    var frac=dist/radius;
+    inner.style.transform="translate(calc(-50% + "+dx+"px), calc(-50% + "+dy+"px))";
+    if(frac<0.08){joyVX=0;joyVY=0;joyActive=false}else{joyVX=r3(dx/radius);joyVY=r3(-dy/radius);joyActive=true}
+  }
+  function resetJoystick(){inner.style.transform="translate(-50%,-50%)";joyVX=0;joyVY=0;joyActive=false;outer.classList.remove("active")}
+
+  outer.addEventListener("pointerdown",function(ev){ev.preventDefault();outer.setPointerCapture(ev.pointerId);outer.classList.add("active");updateJoystick(ev.clientX,ev.clientY)});
+  outer.addEventListener("pointermove",function(ev){if(!outer.hasPointerCapture(ev.pointerId))return;updateJoystick(ev.clientX,ev.clientY)});
+  outer.addEventListener("pointerup",function(ev){resetJoystick()});
+  outer.addEventListener("pointercancel",function(ev){resetJoystick()});
+  outer.addEventListener("lostpointercapture",function(ev){resetJoystick()});
+})();
+
+// Mobile rotate & estop buttons (in joystick area)
+document.querySelectorAll("#joyArea button[data-action]").forEach(function(btn){
+  var clear=function(ev){if(activePointerId!==null&&ev.pointerId!==activePointerId)return;if(buttonAction===btn.dataset.action)buttonAction=null;activePointerId=null;btn.classList.remove("pressed")};
+  btn.addEventListener("pointerdown",function(ev){ev.preventDefault();activePointerId=ev.pointerId;if(btn.setPointerCapture)btn.setPointerCapture(ev.pointerId);buttonAction=btn.dataset.action;if(buttonAction==="ESTOP")estopBurst=15;btn.classList.add("pressed")});
+  btn.addEventListener("pointerup",clear);
+  btn.addEventListener("pointercancel",clear);
+  btn.addEventListener("lostpointercapture",clear);
+});
+
+// ── Audio ──
+function aSend(o){if(audioWs&&audioWs.readyState===WebSocket.OPEN){audioWs.send(JSON.stringify(o));return true}return false}
+function setAu(on){audioOn=on;audioToggleBtn.textContent=on?"关闭":"开启"}
+function aApp(role,txt,cls){var d=document.createElement("div");d.className="a-line "+(cls||"");d.textContent=role+txt;audioLog.appendChild(d);audioLog.scrollTop=audioLog.scrollHeight;return d}
+function ha(m){
+  if(m.type==="asr"){if(!m.final){if(!audioDraftEl)audioDraftEl=aApp("你说: ",m.text||"","draft");else audioDraftEl.textContent="你说: "+(m.text||"")}else{if(audioDraftEl){audioDraftEl.textContent="你说: "+(m.text||"");audioDraftEl.className="a-line user";audioDraftEl=null}else aApp("你说: ",m.text||"","user")}}
+  else if(m.type==="answer")aApp("助手: ",m.text||"","bot");
+  else if(m.type==="audio_status"){aApp("",m.text||"","sys");if(typeof m.on==="boolean"){setAu(m.on);audioState.textContent=m.on?"已开启":"已连接"}}
+}
+
+// ── Connect / Disconnect ──
+function connectAll(){
+  var srv=serverEl.value.trim();
+  if(!/^wss?:\/\//i.test(srv)){if(/^https?:\/\//i.test(srv))srv=srv.replace(/^http/i,"ws");else{var p=window.location.protocol;srv=(p==="https:"?"wss":"ws")+"://"+srv}}
+  srv=srv.replace(/\/$/,"");
+  var tok=tokenEl.value.trim();serverEl.value=srv;
+  if(!tok){setConn("off","缺Token");return}
+  saveSettings(srv,tok);manualControlEnabled=true;updateModeUi();
+  if(controlWs)controlWs.close();if(videoWs)videoWs.close();
+  lastVideoAt=0;videoFps=0;carOnline=false;
+  setConn("","连接中...");
+
+  controlWs=new WebSocket(srv+"/web/control?token="+encodeURIComponent(tok));
+  videoWs=new WebSocket(srv+"/web/video?token="+encodeURIComponent(tok));
+  videoWs.binaryType="arraybuffer";
+
+  controlWs.onopen=function(){setConn("","等待小车...");connectBtn.disabled=true;sLoop()};
+  controlWs.onmessage=function(ev){
+    try{var d=JSON.parse(ev.data);
+      if(d.type==="error"&&d.msg&&d.msg.includes("car offline")){carOnline=false;setConn("off","小车离线");return}
+      if(!carOnline){carOnline=true;setConn("on","已连接")}
+    }catch(e){}
+  };
+  controlWs.onclose=function(){carOnline=false;setConn("off","已断开");connectBtn.disabled=false;eLoop();manualControlEnabled=true;updateModeUi()};
+  controlWs.onerror=function(){carOnline=false;setConn("off","连接失败")};
+
+  videoWs.onopen=function(){};
+  videoWs.onmessage=function(ev){
+    var n=Date.now();if(lastVideoAt>0){var f=1000/Math.max(1,n-lastVideoAt);videoFps=videoFps>0?0.8*videoFps+0.2*f:f}lastVideoAt=n;
+    var b=new Blob([ev.data],{type:"image/jpeg"});var u=URL.createObjectURL(b);var img=$("video");img.src=u;img.onload=function(){URL.revokeObjectURL(u)};
+  };
+  videoWs.onclose=function(){videoFps=0};
+  videoWs.onerror=function(){};
+
+  audioWs=new WebSocket(srv+"/web/audio?token="+encodeURIComponent(tok));
+  audioOn=false;audioDraftEl=null;
+  audioWs.onopen=function(){audioState.textContent="已连接";audioToggleBtn.disabled=false;ttsBtn.disabled=false;setAu(false)};
+  audioWs.onmessage=function(ev){var m;try{m=JSON.parse(ev.data)}catch(e){return}ha(m)};
+  audioWs.onclose=function(){audioState.textContent="已断开";audioToggleBtn.disabled=true;ttsBtn.disabled=true;setAu(false)};
+  audioWs.onerror=function(){audioState.textContent="错误"};
+}
+
+function disconnectAll(){
+  carOnline=false;manualControlEnabled=true;
+  sendPacket(AV.STOP,"dc",{action:"STOP",manualEnable:1});updateModeUi();
+  window.setTimeout(function(){
+    if(controlWs)controlWs.close();if(videoWs)videoWs.close();
+    if(audioWs){try{if(audioOn)aSend({type:"audio_stop"})}catch(e){}audioWs.close()}
+    controlWs=videoWs=audioWs=null;eLoop();setConn("","未连接");
+    audioState.textContent="未连接";audioToggleBtn.disabled=true;ttsBtn.disabled=true;setAu(false);
+    connectBtn.disabled=false;
+  },80);
+}
+
+function releaseRemote(){
+  if(!wsOk())return;
+  keyState={};buttonAction=null;activePointerId=null;idleStopBurst=0;previousActive=false;
+  if(manualControlEnabled){manualControlEnabled=false;sendPacket(AV.STOP,"release",{action:"START_LINE_FOLLOW",manualEnable:0})}
+  else{manualControlEnabled=true;idleStopBurst=8;previousActive=true;sendPacket(AV.STOP,"takeover",{action:"STOP",manualEnable:1})}
+  updateModeUi();updateKbHighlights();
+}
+
+// ── Event listeners ──
+connectBtn.addEventListener("click",connectAll);
+disconnectBtn.addEventListener("click",disconnectAll);
+releaseBtn.addEventListener("click",releaseRemote);
+
+audioToggleBtn.addEventListener("click",function(){var nxt=!audioOn;if(!aSend({type:nxt?"audio_start":"audio_stop"}))return;setAu(nxt);audioState.textContent=nxt?"已开启":"已连接"});
+ttsBtn.addEventListener("click",function(){var t=(ttsText.value||"").trim();if(!t)return;if(!aSend({type:"tts",text:t}))return;aApp("播报: ",t,"sys");ttsText.value=""});
+ttsText.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();ttsBtn.click()}});
+
+speedEl.addEventListener("input",function(){if(Number(speedEl.value)<MIN_SP)speedEl.value=String(MIN_SP);speedValue.textContent=Number(speedEl.value).toFixed(2);window.localStorage.setItem(PK,String(cs()))});
+
+window.addEventListener("keydown",function(ev){
+  if(ie())return;var k=ev.key.toLowerCase();if(!CK[k])return;
+  ev.preventDefault();if(k===" "){idleStopBurst=8;previousActive=true;keyState[" "]=true;updateKbHighlights();return}
+  keyState[k]=true;updateKbHighlights();
+});
+window.addEventListener("keyup",function(ev){
+  if(ie())return;var k=ev.key.toLowerCase();if(!CK[k])return;
+  ev.preventDefault();delete keyState[k];updateKbHighlights();
+});
+window.addEventListener("blur",function(){keyState={};buttonAction=null;activePointerId=null;updateKbHighlights();if(manualControlEnabled){idleStopBurst=8;previousActive=true}});
+window.addEventListener("pagehide",function(){sendPacket(AV.STOP,"pagehide",{action:"STOP",manualEnable:1})});
+updateModeUi();
+
+window.addEventListener("gamepadconnected",function(ev){sLoop()});
+window.addEventListener("gamepaddisconnected",function(){});
+
+loadSettings();
+</script>
+</body>
+</html>

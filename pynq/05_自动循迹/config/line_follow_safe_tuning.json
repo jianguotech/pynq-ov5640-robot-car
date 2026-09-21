@@ -1,0 +1,24 @@
+{
+  "line_follow": {
+    "track_mode": "fast_bright",
+    "width": 320,
+    "height": 240,
+    "fps": 30,
+    "roi_y_ratio": 0.55,
+    "morph_kernel": 3,
+    "lookahead_window": 4,
+    "margin": 32,
+    "minpix": 12,
+    "nwindows": 8,
+    "filter_alpha": 0.35,
+    "predict_frames": 5,
+    "kp": 0.55,
+    "kd": 0.12,
+    "base_vy": 35,
+    "slow_vy": 18,
+    "lost_vy": 12,
+    "wheel_limit": 90,
+    "lost_estop_frames": 8,
+    "obstacle_mode": "off"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "schema": "xilinx.com:schema:json_instance:1.0",
+  "ip_inst": {
+    "xci_name": "design_1_sccb_master_0_0",
+    "cell_name": "sccb_master_0",
+    "component_reference": "bjut_group3_wyf:user:sccb_master:1.0",
+    "ip_revision": "1",
+    "gen_directory": "../../../../../../OV5640_DVP_HW.gen/sources_1/bd/design_1/ip/design_1_sccb_master_0_0",
+    "parameters": {
+      "component_parameters": {
+        "CLK_DIVIDER": [ { "value": "250", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "CAMERA_POWERUP_EN": [ { "value": "1", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "SYS_CLK_FREQ_HZ": [ { "value": "125000000", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "PWDN_HOLD_US": [ { "value": "1000", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "RESET_HOLD_US": [ { "value": "1000", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "POST_RESET_US": [ { "value": "20000", "resolve_type": "user", "format": "long", "usage": "all" } ],
+        "Component_Name": [ { "value": "design_1_sccb_master_0_0", "resolve_type": "user", "usage": "all" } ]
+      },
+      "model_parameters": {
+        "CLK_DIVIDER": [ { "value": "250", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "CAMERA_POWERUP_EN": [ { "value": "1", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "SYS_CLK_FREQ_HZ": [ { "value": "125000000", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "PWDN_HOLD_US": [ { "value": "1000", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "RESET_HOLD_US": [ { "value": "1000", "resolve_type": "generated", "format": "long", "usage": "all" } ],
+        "POST_RESET_US": [ { "value": "20000", "resolve_type": "generated", "format": "long", "usage": "all" } ]
+      },
+      "project_parameters": {
+        "ARCHITECTURE": [ { "value": "zynq" } ],
+        "BASE_BOARD_PART": [ { "value": "" } ],
+        "BOARD_CONNECTIONS": [ { "value": "" } ],
+        "DEVICE": [ { "value": "xc7z020" } ],
+        "PACKAGE": [ { "value": "clg400" } ],
+        "PREFHDL": [ { "value": "VERILOG" } ],
+        "SILICON_REVISION": [ { "value": "" } ],
+        "SIMULATOR_LANGUAGE": [ { "value": "MIXED" } ],
+        "SPEEDGRADE": [ { "value": "-1" } ],
+        "STATIC_POWER": [ { "value": "" } ],
+        "TEMPERATURE_GRADE": [ { "value": "" } ]
+      },
+      "runtime_parameters": {
+        "IPCONTEXT": [ { "value": "IP_Integrator" } ],
+        "IPREVISION": [ { "value": "1" } ],
+        "MANAGED": [ { "value": "TRUE" } ],
+        "OUTPUTDIR": [ { "value": "../../../../../../OV5640_DVP_HW.gen/sources_1/bd/design_1/ip/design_1_sccb_master_0_0" } ],
+        "SELECTEDSIMMODEL": [ { "value": "" } ],
+        "SHAREDDIR": [ { "value": "../../ipshared" } ],
+        "SWVERSION": [ { "value": "2023.2" } ],
+        "SYNTHESISFLOW": [ { "value": "OUT_OF_CONTEXT" } ]
+      }
+    },
+    "boundary": {
+      "ports": {
+        "clk": [ { "direction": "in" } ],
+        "rst_n": [ { "direction": "in" } ],
+        "cmd_valid": [ { "direction": "in" } ],
+        "cmd_ready": [ { "direction": "out" } ],
+        "cmd_rw": [ { "direction": "in" } ],
+        "dev_addr": [ { "direction": "in", "size_left": "6", "size_right": "0" } ],
+        "reg_addr": [ { "direction": "in", "size_left": "15", "size_right": "0" } ],
+        "wr_data": [ { "direction": "in", "size_left": "7", "size_right": "0" } ],
+        "rd_data": [ { "direction": "out", "size_left": "7", "size_right": "0" } ],
+        "busy": [ { "direction": "out" } ],
+        "done": [ { "direction": "out" } ],
+        "error": [ { "direction": "out" } ],
+        "error_code": [ { "direction": "out", "size_left": "3", "size_right": "0" } ],
+        "ov_reset_n": [ { "direction": "out" } ],
+        "ov_pwdn": [ { "direction": "out" } ],
+        "camera_ready": [ { "direction": "out" } ],
+        "sioc_o": [ { "direction": "out" } ],
+        "sioc_t": [ { "direction": "out" } ],
+        "siod_o": [ { "direction": "out" } ],
+        "siod_i": [ { "direction": "in" } ],
+        "siod_t": [ { "direction": "out" } ]
+      },
+      "interfaces": {
+        "rst_n": {
+          "vlnv": "xilinx.com:signal:reset:1.0",
+          "abstraction_type": "xilinx.com:signal:reset_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "POLARITY": [ { "value": "ACTIVE_LOW", "value_src": "constant", "value_permission": "bd_and_user", "usage": "all" } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "RST": [ { "physical_name": "rst_n" } ]
+          }
+        },
+        "clk": {
+          "vlnv": "xilinx.com:signal:clock:1.0",
+          "abstraction_type": "xilinx.com:signal:clock_rtl:1.0",
+          "mode": "slave",
+          "parameters": {
+            "FREQ_HZ": [ { "value": "100000000", "value_src": "user_prop", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "FREQ_TOLERANCE_HZ": [ { "value": "0", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "long", "is_ips_inferred": true, "is_static_object": false } ],
+            "PHASE": [ { "value": "0.0", "value_permission": "bd_and_user", "resolve_type": "generated", "format": "float", "is_ips_inferred": true, "is_static_object": false } ],
+            "CLK_DOMAIN": [ { "value": "design_1_processing_system7_0_0_FCLK_CLK0", "value_src": "default_prop", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_BUSIF": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_PORT": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "ASSOCIATED_RESET": [ { "value": "", "value_permission": "bd_and_user", "resolve_type": "generated", "is_ips_inferred": true, "is_static_object": false } ],
+            "INSERT_VIP": [ { "value": "0", "resolve_type": "user", "format": "long", "usage": "simulation.rtl", "is_ips_inferred": true, "is_static_object": false } ]
+          },
+          "port_maps": {
+            "CLK": [ { "physical_name": "clk" } ]
+          }
+        }
+      }
+    }
+  }
+}
